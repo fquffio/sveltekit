@@ -423,6 +423,7 @@ export interface SSRState {
 	read?: (file: string) => Buffer;
 	before_handle?: (event: RequestEvent, config: any, prerender: PrerenderOption) => void;
 	emulator?: Emulator;
+	signal?: AbortSignal;
 }
 
 export type StrictBody = string | ArrayBufferView;

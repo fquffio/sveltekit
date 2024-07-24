@@ -119,6 +119,7 @@ const ssr = async (req, res) => {
 		return;
 	}
 
+	const abort_controller = new AbortController();
 	setResponse(
 		res,
 		await server.respond(request, {
@@ -163,8 +164,10 @@ const ssr = async (req, res) => {
 					// @ts-expect-error
 					req.info?.remoteAddress
 				);
-			}
-		})
+			},
+			signal: abort_controller.signal
+		}),
+		{ abortController: abort_controller }
 	);
 };
 

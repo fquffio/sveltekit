@@ -106,6 +106,17 @@ function get_raw_body(req, body_size_limit) {
 // TODO 3.0 make the signature synchronous?
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function getRequest({ request, base, bodySizeLimit }) {
+	const abort_controller = new AbortController();
+
+	const close = () => {
+		if (!request.complete) {
+			abort_controller.abort();
+		}
+
+		request.off('close', close);
+	};
+	request.on('close', close);
+
 	return new Request(base + request.url, {
 		// @ts-expect-error
 		duplex: 'half',
@@ -114,18 +125,22 @@ export async function getRequest({ request, base, bodySizeLimit }) {
 		body:
 			request.method === 'GET' || request.method === 'HEAD'
 				? undefined
-				: get_raw_body(request, bodySizeLimit)
+				: get_raw_body(request, bodySizeLimit),
+		signal: abort_controller.signal
 	});
 }
 
 /**
  * @param {import('http').ServerResponse} res
  * @param {Response} response
+ * @param {{
+ *   abortController?: AbortController;
+ * }} options
  * @returns {Promise<void>}
  */
 // TODO 3.0 make the signature synchronous?
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function setResponse(res, response) {
+export async function setResponse(res, response, { abortController } = {}) {
 	for (const [key, value] of response.headers) {
 		try {
 			res.setHeader(
@@ -174,6 +189,10 @@ export async function setResponse(res, response) {
 		// then it will appear here, it is useless, but it needs to be catch.
 		reader.cancel(error).catch(() => {});
 		if (error) res.destroy(error);
+
+		// Signal that the response has been cancelled (i.e. client disconnected)
+		// if an AbortController was provided by the adapter.
+		if (abortController) abortController.abort(error);
 	};
 
 	res.on('close', cancel);

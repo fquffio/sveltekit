@@ -184,6 +184,7 @@ export async function preview(vite, vite_config, svelte_config) {
 				base: `${protocol}://${host}`,
 				request: req
 			});
+			const abort_controller = new AbortController();
 
 			setResponse(
 				res,
@@ -194,8 +195,10 @@ export async function preview(vite, vite_config, svelte_config) {
 						throw new Error('Could not determine clientAddress');
 					},
 					read: (file) => fs.readFileSync(join(svelte_config.kit.files.assets, file)),
-					emulator
-				})
+					emulator,
+					signal: abort_controller.signal
+				}),
+				{ abortController: abort_controller }
 			);
 		});
 	};

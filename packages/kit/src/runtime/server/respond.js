@@ -201,7 +201,8 @@ export async function respond(request, options, manifest, state) {
 		},
 		url,
 		isDataRequest: is_data_request,
-		isSubRequest: state.depth > 0
+		isSubRequest: state.depth > 0,
+		signal: state.signal
 	};
 
 	/** @type {import('types').RequiredResolveOptions} */

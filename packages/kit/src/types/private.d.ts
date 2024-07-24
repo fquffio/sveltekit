@@ -223,6 +223,7 @@ export type PrerenderMap = Map<string, PrerenderOption>;
 export interface RequestOptions {
 	getClientAddress(): string;
 	platform?: App.Platform;
+	signal?: AbortSignal;
 }
 
 export interface RouteSegment {

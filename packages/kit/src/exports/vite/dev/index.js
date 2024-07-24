@@ -521,6 +521,7 @@ export async function dev(vite, vite_config, svelte_config) {
 					return;
 				}
 
+				const abort_controller = new AbortController();
 				const rendered = await server.respond(request, {
 					getClientAddress: () => {
 						const { remoteAddress } = req.socket;
@@ -531,7 +532,8 @@ export async function dev(vite, vite_config, svelte_config) {
 					before_handle: (event, config, prerender) => {
 						async_local_storage.enterWith({ event, config, prerender });
 					},
-					emulator
+					emulator,
+					signal: abort_controller.signal
 				});
 
 				if (rendered.status === 404) {
@@ -540,7 +542,7 @@ export async function dev(vite, vite_config, svelte_config) {
 						setResponse(res, rendered);
 					});
 				} else {
-					setResponse(res, rendered);
+					setResponse(res, rendered, { abortController: abort_controller });
 				}
 			} catch (e) {
 				const error = coalesce_to_error(e);

@@ -1102,6 +1102,13 @@ declare module '@sveltejs/kit' {
 		 * `true` for `+server.js` calls coming from SvelteKit without the overhead of actually making an HTTP request. This happens when you make same-origin `fetch` requests on the server.
 		 */
 		isSubRequest: boolean;
+		/**
+		 * Signal that the response has been cancelled before it could finish. This is usually due to an error, to the client disconnecting or navigating away.
+		 *
+		 * It might be useful to react to this signal in order to interrupt early streaming responses and running requests that might be still running, and that could
+		 * not be sent to the client anyway.
+		 */
+		signal?: AbortSignal | undefined;
 	}
 
 	/**
@@ -1567,6 +1574,7 @@ declare module '@sveltejs/kit' {
 	interface RequestOptions {
 		getClientAddress(): string;
 		platform?: App.Platform;
+		signal?: AbortSignal;
 	}
 
 	interface RouteSegment {
@@ -1923,7 +1931,9 @@ declare module '@sveltejs/kit/node' {
 		bodySizeLimit?: number;
 	}): Promise<Request>;
 
-	export function setResponse(res: import('http').ServerResponse, response: Response): Promise<void>;
+	export function setResponse(res: import('http').ServerResponse, response: Response, { abortController }?: {
+		abortController?: AbortController;
+	}): Promise<void>;
 	/**
 	 * Converts a file on disk to a readable stream
 	 * @since 2.4.0

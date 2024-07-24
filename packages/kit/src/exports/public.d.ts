@@ -1120,6 +1120,13 @@ export interface RequestEvent<
 	 * `true` for `+server.js` calls coming from SvelteKit without the overhead of actually making an HTTP request. This happens when you make same-origin `fetch` requests on the server.
 	 */
 	isSubRequest: boolean;
+	/**
+	 * Signal that the response has been cancelled before it could finish. This is usually due to an error, to the client disconnecting or navigating away.
+	 *
+	 * It might be useful to react to this signal in order to interrupt early streaming responses and running requests that might be still running, and that could
+	 * not be sent to the client anyway.
+	 */
+	signal?: AbortSignal | undefined;
 }
 
 /**
